@@ -16,8 +16,10 @@
 
 ## 索引（用到再读，不要全读）
 
-| 场景                         | 读这个                                                                                                |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 建模块 / 动模块边界 / 写测试 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)                                                          |
-| 选语言 / 选库 / 建新仓库     | [组织语言政策](https://github.com/Cloudbird-Software/.github/blob/main/governance/language-policy.md) |
-| 模块内工作                   | 该模块目录下的 AGENTS.md                                                                              |
+| 场景                | 读这个                                                                                                                       |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 建模块 / 动模块边界 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)                                                                                 |
+| 选语言 / 选库       | [governance/policy/languages.yaml](https://github.com/Cloudbird-Software/.github/blob/main/governance/policy/languages.yaml) |
+| 写测试 / 上新测试   | [governance/policy/testing.yaml](https://github.com/Cloudbird-Software/.github/blob/main/governance/policy/testing.yaml)     |
+| 治理措施总清单      | [governance/GOVERNANCE.yaml](https://github.com/Cloudbird-Software/.github/blob/main/governance/GOVERNANCE.yaml)             |
+| 模块内工作          | 该模块目录下的 AGENTS.md                                                                                                     |
