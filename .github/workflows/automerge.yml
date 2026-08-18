@@ -1,7 +1,5 @@
 name: dependabot-automerge
 # zizmor: ignore[dangerous-triggers]
-# 说明：pull_request_target 用读权限上下文 + fetch-metadata 校验 PR 元数据后才自动合并，
-# 全程不 checkout PR 代码，不执行不可信内容；写权限仅在 metadata 校验后的合并步骤使用。
 on: pull_request_target
 
 permissions: {}
@@ -9,7 +7,6 @@ permissions: {}
 jobs:
   automerge:
     # zizmor: ignore[bot-conditions]
-    # 说明：actor 检查仅为第一道门，真正的门禁是 fetch-metadata 的依赖元数据 + gate check。
     if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:

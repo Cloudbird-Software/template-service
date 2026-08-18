@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   hygiene:
-    # zizmor: ignore[unpinned-uses]（大版本指针策略：v1 由 CI-Workflows 仓维护移动）
+    # zizmor: ignore[unpinned-uses]
     uses: Cloudbird-Software/CI-Workflows/.github/workflows/hygiene.yml@v1
 
   check:
