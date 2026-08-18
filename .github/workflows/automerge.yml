@@ -14,8 +14,8 @@ jobs:
       - uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v3.2.0
         id: app
         with:
-          app-id: ${{ secrets.CLAUDBIRD_APP_ID }}
-          private-key: ${{ secrets.CLAUDBIRD_APP_KEY }}
+          app-id: 4632704
+          private-key: ${{ secrets.AGENT_APP_SECRET }}
           owner: ${{ github.repository_owner }}
           repositories: ${{ github.event.repository.name }}
           permission-contents: write
