@@ -22,3 +22,5 @@ Cloudbird Software 新项目模板。用 GitHub "Use this template" 或
 - `gate`：聚合门（组织 ruleset 的唯一必需 check）
 
 工作流实现在 [CI-Workflows](https://github.com/Cloudbird-Software/CI-Workflows)，本仓只引用 `@v1`。
+
+<!-- test marker: verify socket + qodo integration 2026-08-18 -->
