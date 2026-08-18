@@ -5,4 +5,8 @@ export default tseslint.config(
   { ignores: ["dist/", "coverage/", "reports/"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  {
+    files: ["**/*.cjs"],
+    languageOptions: { sourceType: "script", globals: { module: "writable" } },
+  },
 );
