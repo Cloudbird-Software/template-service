@@ -2,12 +2,17 @@
 
 ## 硬规则
 
-1. 提交前必须本地 `make check` 全绿。做不到就不要说"完成了"。
-2. 不准修改 `.github/workflows/**`、`Makefile` 的 check 目标、ruleset —— 除非我明确要求。
-3. 不准新增第三方依赖：先列出"依赖名 / 用途 / 许可证 / 是否能用标准库替代"，等我确认。
+1. **认证**：所有 git push / PR / Issue 操作用 cloudbird-agent App 令牌，禁止使用任何个人 PAT。
+   获取方式（单仓库最小作用域，1 小时有效）：
+   `GH_TOKEN=$(REPO=<repo> bash <(curl -sS https://raw.githubusercontent.com/Cloudbird-Software/.github/main/scripts/gh-app-token.sh))`
+   需要环境变量 `CB_APP_ID` + `CB_APP_KEY_FILE`（私钥路径）。App 无 Workflows 权限，
+   改 `.github/workflows/**` 的分支会被直接拒收——此类改动由人类用自己的凭据提交。
+2. 提交前必须本地 `make check` 全绿。做不到就不要说"完成了"。
+3. 不准修改 `.github/workflows/**`、`Makefile` 的 check 目标、ruleset —— 除非我明确要求。
+4. 不准新增第三方依赖：先列出"依赖名 / 用途 / 许可证 / 是否能用标准库替代"，等我确认。
    禁止引入 AGPL / GPL-3.0 / SSPL 的库。
-4. 任何密钥、客户名、客户数据、真实数据库连接串，一律不进仓库。用 .env.example 占位。
-5. 一个 PR 只做一件事，diff 尽量 < 400 行。大改先给我方案再动手。
+5. 任何密钥、客户名、客户数据、真实数据库连接串，一律不进仓库。用 .env.example 占位。
+6. 一个 PR 只做一件事，diff 尽量 < 400 行。大改先给我方案再动手。
 
 ## 必须做
 
