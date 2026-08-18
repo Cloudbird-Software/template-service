@@ -1,0 +1,20 @@
+name: dependabot-automerge
+on: pull_request_target
+
+permissions: {}
+
+jobs:
+  automerge:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: dependabot/fetch-metadata@v3
+        id: meta
+      - if: steps.meta.outputs.update-type != 'version-update:semver-major'
+        env:
+          PR: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ github.token }}
+        run: gh pr merge --auto --squash "$PR"
