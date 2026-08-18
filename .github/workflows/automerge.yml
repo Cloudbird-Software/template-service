@@ -15,7 +15,7 @@ jobs:
           egress-policy: audit
       # 用 App 身份合并：GITHUB_TOKEN 的合并不会触发下游 workflow（release 等），
       # App 令牌会触发；且合并动作在审计日志中归属 cloudbird-agent[bot]。
-      - uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v3.2.0
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         id: app
         with:
           app-id: 4632704
