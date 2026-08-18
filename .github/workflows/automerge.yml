@@ -1,12 +1,10 @@
 name: dependabot-automerge
-# zizmor: ignore[dangerous-triggers]
 on: pull_request_target
 
 permissions: {}
 
 jobs:
   automerge:
-    # zizmor: ignore[bot-conditions]
     if: github.actor == 'dependabot[bot]'
     runs-on: ubuntu-latest
     permissions:
