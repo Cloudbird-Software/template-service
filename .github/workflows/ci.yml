@@ -13,10 +13,12 @@ permissions:
 
 jobs:
   hygiene:
-    uses: Cloudbird-Software/CI-Workflows/.github/workflows/hygiene.yml@v1 # zizmor: ignore[unpinned-uses]（大版本指针策略，由 CI-Workflows 维护）
+    # zizmor: ignore[unpinned-uses]（大版本指针策略：v1 由 CI-Workflows 仓维护移动）
+    uses: Cloudbird-Software/CI-Workflows/.github/workflows/hygiene.yml@v1
 
   check:
-    uses: Cloudbird-Software/CI-Workflows/.github/workflows/check.yml@v1 # zizmor: ignore[unpinned-uses]
+    # zizmor: ignore[unpinned-uses]
+    uses: Cloudbird-Software/CI-Workflows/.github/workflows/check.yml@v1
     with:
       runtime: node
       node-version: "24"
@@ -26,7 +28,8 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: Cloudbird-Software/CI-Workflows/.github/workflows/dep-review.yml@v1 # zizmor: ignore[unpinned-uses]
+    # zizmor: ignore[unpinned-uses]
+    uses: Cloudbird-Software/CI-Workflows/.github/workflows/dep-review.yml@v1
 
   gate:
     if: always()

@@ -4,12 +4,15 @@ updates:
     directory: "/"
     schedule: { interval: weekly }
     groups:
-      actions: { patterns: ["*"] } # zizmor: ignore[dependabot-cooldown]（gate 全绿才自动合并，无需冷却期）
+      actions:
+        patterns: ["*"]
+        cooldown-days: 7
   - package-ecosystem: npm
     directory: "/"
     schedule: { interval: weekly }
     open-pull-requests-limit: 5
     groups:
-      minor-patch: # zizmor: ignore[dependabot-cooldown]
+      minor-patch:
         patterns: ["*"]
         update-types: ["minor", "patch"]
+        cooldown-days: 7
