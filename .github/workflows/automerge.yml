@@ -9,6 +9,10 @@ jobs:
     runs-on: ubuntu-latest
     permissions: {}
     steps:
+      - name: Harden Runner (egress audit)
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2.21.0
+        with:
+          egress-policy: audit
       # 用 App 身份合并：GITHUB_TOKEN 的合并不会触发下游 workflow（release 等），
       # App 令牌会触发；且合并动作在审计日志中归属 cloudbird-agent[bot]。
       - uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v3.2.0
