@@ -1,5 +1,5 @@
 name: dependabot-automerge
-on: pull_request_target
+on: pull_request_target # zizmor: ignore[dangerous-triggers]（依赖 PR 元数据校验后才自动合并，不 checkout PR 代码）
 
 permissions: {}
 
@@ -11,7 +11,7 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - uses: dependabot/fetch-metadata@v3
+      - uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
         id: meta
       - if: steps.meta.outputs.update-type != 'version-update:semver-major'
         env:
