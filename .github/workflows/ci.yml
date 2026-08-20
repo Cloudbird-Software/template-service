@@ -1,5 +1,8 @@
 name: CI
 on:
+  merge_group:
+    # P2-7（ADR-0042）：merge queue 必需订阅
+    types: [checks_requested]
   pull_request:
   push:
     branches: [main]
@@ -120,6 +123,9 @@ jobs:
           case "$EVENT" in
             pull_request) EXPECTED_SKIP="deps-audit" ;;
             push)         EXPECTED_SKIP="deps adr-required" ;;
+                          # merge_group（ADR-0042）：deps 仅 PR 事件（dependency-review 限制）、deps-audit 仅 push、
+                          # adr-required 消费 PR title——三者均已在入队前 PR 面执法，队列面验证组合树本体
+            merge_group)  EXPECTED_SKIP="deps deps-audit adr-required" ;;
             *)            EXPECTED_SKIP="" ;;
           esac
           BAD=$(echo "$NEEDS" | jq -r --arg skip "$EXPECTED_SKIP" '
