@@ -22,6 +22,8 @@ version: 1
 # 关卡注册表（关卡统一 CLI 契约 IFACE-04 / #127 §2：id/作用域/阻断性/责任角色）
 gates:
   - { id: g010-spec-schema, scope: spec, blocking: true, owner: spec-author }
+  - { id: g050-fail-before, scope: test, blocking: true, owner: test-author }
+  - { id: g060-test-tamper, scope: test, blocking: true, owner: refactorer }
 
 thresholds:
   g010:
@@ -60,3 +62,28 @@ thresholds:
       budget_id_pattern: "BUDGET-[0-9]+"
       test_id_pattern: "TEST-[0-9]+"
       require_card_binding: true
+
+# ---- W2-C2：测试产物拓扑（.github#215 / ADR-0061）----
+# 读取面与 W2-C1 一致：quality/lib/lock/lib.sh 的 contract_value → quality/lib/
+# contract.sh 的 qc_get（阈值/配置唯一来源，GATE_TH_* 可覆盖，缺键 fail-closed）。
+# 值约定：列表型值写成"以 | 连接的单个 ERE/单词串"（qc_get 的列表输出以空格连接，
+# 而签名正则/命令含空格，故全部用标量表示）。
+g050-fail-before:
+  # 红复现运行器：g050 在测试 commit 的 worktree 上复跑新测试（worktree 置于
+  # reports/ 下——git/prettier/eslint 均忽略，且 node 模块解析向上命中仓根 node_modules）
+  runner-cmd: "npx vitest run"
+  # 验收测试路径前缀（test-author commit 判定：改动文件全部落在该前缀内）
+  test-paths: "tests/"
+  # 有效红签名（ERE；命中且无 collection 签名才算"断言失败"的红）
+  assert-signatures: "AssertionError|expected .+ to (be|equal|contain|match|have)"
+  # 无效红签名（ERE；任一命中判 exit 3——import/编译/收集错不算红，ADR-0061 决策 1）
+  collection-signatures: "Failed to resolve import|Cannot find module|ERR_MODULE_NOT_FOUND|does not provide an export named|SyntaxError|Transform failed|Failed to load config|No test suite found"
+g060-test-tamper:
+  # 锁定集 manifest（路径→sha256；创建走 bootstrap，之后只许 bot 提交）
+  lock-file: "quality/lock/baseline.json"
+  # owner 登录（ERE，| 连接；owner PR 改锁定路径放行，仍提示锁定集待更新）
+  owner-logins: "randypanding"
+  # bot 提交者模式（ERE，匹配 commit 的 "作者 <邮箱>" 串；manifest 变更只许 bot）
+  bot-patterns: '\[bot\]'
+  # Spec-Change trailer 回查的 spec PR 所在仓（trailer: "Spec-Change: <PR#>"）
+  spec-repo: "Cloudbird-Software/.github"

@@ -8,3 +8,6 @@ reports/
 !.env.example
 *.log
 .DS_Store
+
+# W2-C2（ADR-0061）：红证据本地留档不入库（贴 PR body）
+quality/evidence/
