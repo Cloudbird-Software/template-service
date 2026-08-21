@@ -171,14 +171,17 @@ def ref_counts(root, files, sym):
     在本仓简化为跨文件引用计数：确定性、可离线复现）。"""
     pats = {name: re.compile(r'\b%s\b' % re.escape(name)) for name in sym}
     hits = {name: set() for name in sym}
+    occ = {name: 0 for name in sym}
     for rel in files:
         text = read(root, rel)
         for name, ent in sym.items():
             if rel in ent['files']:
                 continue
-            if pats[name].search(text):
+            n = len(pats[name].findall(text))
+            if n:
                 hits[name].add(rel)
-    return {name: len(v) for name, v in hits.items()}
+                occ[name] += n
+    return {name: len(v) for name, v in hits.items()}, occ
 
 
 def import_graph(root, files):
@@ -192,8 +195,11 @@ def import_graph(root, files):
             if not spec.startswith('.'):
                 continue  # 裸说明符=外部包/Node 内建，不入仓内图
             base = os.path.normpath(os.path.join(os.path.dirname(rel), spec)).replace('\\', '/')
-            for cand in (base, base + '.ts', base + '.js', base + '.tsx',
-                         base + '/index.ts', base + '/index.js'):
+            # Node ESM 习惯写 .js 后缀指向 .ts 源——两种后缀都尝试解析
+            cands = [base, re.sub(r'\.js$', '.ts', base)]
+            cands += [base + '.ts', base + '.js', base + '.tsx',
+                      base + '/index.ts', base + '/index.js']
+            for cand in cands:
                 if cand in fs and cand != rel:
                     graph[rel].add(cand)
                     break

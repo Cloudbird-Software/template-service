@@ -47,8 +47,8 @@ for want in alpha beta gamma helper top_fn; do
   [[ "$R" == *"'$want'"* ]] && ok "符号宇宙含 $want" || bad "符号宇宙缺 $want：$R"
 done
 
-R=$(py_expr "$FX" 'files=t.list_files(root,"src"); sym=t.make_symbols(root,files); print(t.ref_counts(root,files,sym)["helper"])')
-[[ "$R" == *1* ]] && ok "helper 被 gamma.ts 跨文件引用=1" || bad "ref_counts(helper)=$R"
+R=$(py_expr "$FX" 'files=t.list_files(root,"src"); sym=t.make_symbols(root,files); refs,occ=t.ref_counts(root,files,sym); print(refs["helper"], occ["helper"])')
+[[ "$R" == *1* ]] && ok "helper 被 gamma.ts 跨文件引用（文件数/出现数均=1）" || bad "ref_counts(helper)=$R"
 
 R=$(py_expr "$FX" 'g=t.import_graph(root, t.list_files(root,"src")); print(sorted(g["src/index.ts"]), sorted(g["src/mod/gamma.ts"]))')
 [[ "$R" == *"src/mod/gamma.ts"* && "$R" == *"src/mod/helper.ts"* ]] \
