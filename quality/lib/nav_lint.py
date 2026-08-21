@@ -195,7 +195,7 @@ def scan(root, th):
 
     # 2. repo-map 覆盖率
     universe = ts.make_symbols(root, files)
-    refs = ts.ref_counts(root, files, universe)
+    refs, _occ = ts.ref_counts(root, files, universe)
     covered, used = repomap(universe, refs, th['repomap-token-budget'])
     total = len(universe)
     coverage = round(covered / total, 4) if total else 1.0

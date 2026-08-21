@@ -188,7 +188,7 @@ def scan(root, th):
 
     # 2. 死通用性（入口文件豁免——公共 API 面按设计存在）
     universe = ts.make_symbols(root, files)
-    refs = ts.ref_counts(root, files, universe)
+    refs, occ = ts.ref_counts(root, files, universe)
     dead = 0
     for name, ent in sorted(universe.items()):
         if ent['kind'] != 'export':
@@ -236,7 +236,7 @@ def scan(root, th):
                 if m and 'export' in line:
                     new_syms.setdefault(m.group(1), rel)
         for name, rel in sorted(new_syms.items()):
-            r = refs.get(name, 0)
+            r = occ.get(name, 0)  # 调用点=出现次数（Rule-of-Three 的“三次”）
             if 1 <= r < int(th['rule-of-three-min-refs']):
                 premature += 1
                 F.append(finding(rel, 1, 'cx-premature-abstraction',
