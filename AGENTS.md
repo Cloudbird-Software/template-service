@@ -1,18 +1,17 @@
 # AGENTS.md（索引型——只放不可推断的约束，宪法 §4D ≤30 行；细节按需读索引）
 
 <!-- entry-protocol v1 -->
+
 ### 入口协议（陌生 agent 从这里开始——宪法 §11 / ADR-0055）
+
 1. 取 ghcb（钉 SHA，禁浮动 main）：`curl -sS -o ghcb https://raw.githubusercontent.com/Cloudbird-Software/.github/f72d9520706c8fca974d92456f65cae5c1412bb7/scripts/ghcb && chmod +x ghcb`（凭据用你自己的：`gh auth login` 或 `export GH_TOKEN=<PAT>`）
 2. 找活：`bash ghcb next [owner/repo]` → 列 state:ready 卡（卡 issue 是唯一工作凭证，无卡不开工）
 3. 认领：`bash ghcb claim <n> [owner/repo]` → 评论 /claim——conductor 转介 arbiter 原子 CAS 租约，先到先得；败者换下一张（`bash ghcb status <n>` 看持有者）
 4. 开工：`make card-test CARD=<n>`（读卡 AC、测试先行）→ `make gates-pr`（本地复现 CI 关卡）
 5. 提 PR：body 必带一行卡元数据 `Card: <owner>/<repo>#<n>`（`bash ghcb card-meta <n>` 生成；缺失=后续关卡 exit 3）
 6. front-desk 命令（卡 issue 评论，conductor 转介 arbiter 处理）：/claim 认领 · /release 释放租约 · /retry 隔离回流
+
 <!-- /entry-protocol -->
-
-## 命令
-
-- `make setup` 安装 / `make check` 提交前必跑（lint+arch+test）/ `make test <文件>` 单测
 
 ## 硬规则（违反 = PR 打回）
 
@@ -24,6 +23,6 @@
 
 ## 索引（用到再读，不要全读）
 
-- 建模块/动模块边界 → [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)；本地命令 → Makefile
+- 本地命令：`make setup` 安装 / `make check` 提交前必跑（lint+arch+test）/ `make test <文件>` 单测；建模块/动边界 → [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - 选语言/选库 → [.github 仓 governance/policy/languages.yaml](https://github.com/Cloudbird-Software/.github/blob/main/governance/policy/languages.yaml)；测试政策 → [testing.yaml](https://github.com/Cloudbird-Software/.github/blob/main/governance/policy/testing.yaml)
 - 治理措施总清单 → [.github 仓 governance/GOVERNANCE.yaml](https://github.com/Cloudbird-Software/.github/blob/main/governance/GOVERNANCE.yaml)；模块内工作 → 该模块目录下的 AGENTS.md
