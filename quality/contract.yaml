@@ -1,0 +1,62 @@
+# quality/contract.yaml —— 唯一阈值来源（宪法 §4A 铁律；ADR-0060 决策 1）
+#
+# 为什么单源：阈值散落在脚本/workflow 里时，改一个刻度要翻 N 个仓且无人能审计；
+# 集中到这里后，"当前舰队在用什么刻度"是一个可 grep 的文件。
+# 卡面 AC-1 断言：quality/** 与 Makefile 内不得出现硬编码数字阈值——脚本一律经
+# quality/lib/contract.sh 的 qc_get 读这里；测试注入用 GATE_TH_* 环境变量覆盖，
+# 不许为绕过本文件改脚本。
+#
+# 增改规则（C1 面，改动须引用 ADR）：
+#   - 新关卡（g020+）的阈值键落在 thresholds.<gate-id> 下，禁止写进脚本/workflow；
+#   - EARS 句型正则与模糊禁词表随本文件 version 版本化（ADR-0060 决策 3/4）：
+#     放宽（删句型/删禁词/调大刻度）必须开新 ADR，收紧走普通 C1 PR；
+#   - INV-08 阈值镜像校验预留：本文件经脚手架下发各产品仓后，下游仓镜像与
+#     本正本按 version + 内容哈希对账，不一致即 fail（尚未实现，实现时引用 INV-08）。
+#
+# 语法子集：quality/lib/gate_common.py 的零依赖解析器只支持——嵌套映射（2 空格
+# 缩进）、引号标量（单/双引号等价、不做转义展开；prettier 会统一成双引号）、
+# 行内 [a, b] 列表、整行 # 注释。要引入更复杂的 YAML 前先扩解析器并补测试
+# （fail-closed：解析不了的行直接报错，不静默跳过）。
+version: 1
+
+# 关卡注册表（关卡统一 CLI 契约 IFACE-04 / #127 §2：id/作用域/阻断性/责任角色）
+gates:
+  - { id: g010-spec-schema, scope: spec, blocking: true, owner: spec-author }
+
+thresholds:
+  g010:
+    spec:
+      # 结构断言（ADR-0060 决策 3）：H1 唯一、frontmatter 元数据块、AC 编号连续
+      required_meta_keys: ["taskId", "specVersion", "title", "irRef"]
+      task_id_pattern: "^[A-Z]+-[0-9]+$"
+      ir_pattern: "^IR-[0-9]+$"
+      ac_id_pattern: "^AC-[0-9]+$"
+      beh_id_pattern: "^(INV|BEH|IFACE|BUDGET|DECISION|ASSUMPTION)-[0-9]+$"
+      min_ac_clauses: 1
+      max_title_length: 80
+    ears:
+      # EARS 六句型正则（宪法 §9#1 署名：EARS 句法；ADR-0060 决策 3）。
+      # 键=句型 id，值=正则（中英等价形并列；英文关键词约定全大写）。
+      # 只应用于 BEH 条款；合法句式被拦（误报）时改写条款措辞，不放宽正则。
+      ears-when: "^(当|每当).{1,60}?(之)?时[，,].+$|^(WHEN|WHENEVER) .+ (THEN|SHALL) .+"
+      ears-while: "^(当|在).{1,60}?(期间|过程中|状态下)[，,]?.+$|^WHILE .+ (THEN|SHALL) .+"
+      ears-where: "^在.{1,60}?(中|下|内)[，,].+$|^WHERE .+ (THEN|SHALL) .+"
+      ears-if: "^(若|如果).{1,60}?(则|，)[，,]?.+$|^IF .+ THEN .+"
+      ears-ubiquitous: "^(系统|本系统|服务|关卡|工具)(必须|应当|应|须).+$|^THE [A-Z]+ SHALL .+"
+      ears-gwt: "^GIVEN .+ WHEN .+ THEN .+"
+    vague_terms:
+      # 模糊禁词表（ADR-0060 决策 4，版本化）：出现在 AC/BEH 条款即 fail；
+      # 唯一豁免=同条款显式绑定 BUDGET 编号（如「预算 BUDGET-1」），可 grep 复核。
+      - "合理"
+      - "适当"
+      - "尽可能"
+      - "尽量"
+      - "必要时"
+      - "酌情"
+      - "大概"
+      - "等等"
+    trace:
+      # UID 追溯闭合（ADR-0060 决策 5 / 宪法 §4E）：IR↔SPEC↔AC↔Card↔测试
+      budget_id_pattern: "BUDGET-[0-9]+"
+      test_id_pattern: "TEST-[0-9]+"
+      require_card_binding: true
