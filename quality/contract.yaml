@@ -24,6 +24,7 @@ gates:
   - { id: g010-spec-schema, scope: spec, blocking: true, owner: spec-author }
   - { id: g020-arch, scope: code, blocking: true, owner: refactorer }
   - { id: g030-nav, scope: code, blocking: true, owner: refactorer }
+  - { id: g040-complexity, scope: code, blocking: true, owner: implementer }
   - { id: g050-fail-before, scope: test, blocking: true, owner: test-author }
   - { id: g060-test-tamper, scope: test, blocking: true, owner: refactorer }
 
@@ -134,3 +135,22 @@ g030-nav:
   doc-symbol-ignore: ""
   # 5) 词表 lint：版本化 glossary；文档散文中的缩写必须先入表
   glossary-file: "quality/glossary.yaml"
+g040-complexity:
+  # 抗复杂度组（ADR-0070 决策 3）：对 AI 复杂化冲动的机器对手。
+  # 1) 认知复杂度（简化 Sonar 口径 + CodeScene 因素清单：嵌套/布尔组合/分支）
+  code-paths: "src|tests"
+  ignore-paths: "quality/fixtures|quality/reports"
+  max-cognitive-complexity: 15
+  # 2) 死通用性：零跨文件引用的导出（entry-paths=公共 API 面，按设计存在故豁免）
+  entry-paths: "src/index.ts"
+  # 3) Rule-of-Three：PR 新增导出符号的最小引用点（<3=过早抽象）
+  rule-of-three-min-refs: 3
+  # 5) 净增 LOC 预算：产品代码面（src/tests）；quality 自身膨胀由 org 的
+  #    "diff<400 行/PR" 纪律管，不重复计账
+  loc-budget-paths: "src|tests"
+  max-net-loc: 400
+  # 6) 抑制标记零增长（口径对齐 CI-Workflows suppression-gate：带 ADR/issue
+  #    引用的抑制走豁免通道，行数计入豁免指标——豁免行数本身只升不降难）
+  suppression-scan-paths: "src|tests"
+  # 7) 豁免审计：条目必须带可追溯 ref（ADR-NNNN / .github#NN / #NN）
+  exemptions-file: "quality/exemptions.yaml"
