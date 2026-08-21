@@ -41,6 +41,7 @@ run_fast() {
     g060-test-tamper.lock-file g060-test-tamper.owner-logins
     g060-test-tamper.bot-patterns g060-test-tamper.spec-repo
     g020-arch.depcruise-cmd g020-arch.max-depcruise-errors g020-arch.exports-max
+    g900-ratchet.baseline-file g900-ratchet.bot-patterns g900-ratchet.loosen-trailer
   )
   for k in "${keys[@]}"; do
     v=$(contract_value "${k%.*}" "${k#*.}") || { remember 3; continue; }
