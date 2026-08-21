@@ -27,6 +27,7 @@ gates:
   - { id: g040-complexity, scope: code, blocking: true, owner: implementer }
   - { id: g050-fail-before, scope: test, blocking: true, owner: test-author }
   - { id: g060-test-tamper, scope: test, blocking: true, owner: refactorer }
+  - { id: g900-ratchet, scope: repo, blocking: true, owner: hardener }
 
 thresholds:
   g010:
@@ -154,3 +155,12 @@ g040-complexity:
   suppression-scan-paths: "src|tests"
   # 7) 豁免审计：条目必须带可追溯 ref（ADR-NNNN / .github#NN / #NN）
   exemptions-file: "quality/exemptions.yaml"
+g900-ratchet:
+  # 棘轮（ADR-0070 决策 4 / 卡 AC-3）：全仓指标只许变好。口径=只棘轮"坏量计数"
+  # （违规计数/最大认知复杂度/抑制与豁免总量——键清单在 ratchet_lib.RATCHET_KEYS）；
+  # 规模类指标（符号总数/平均跳数）随生长合理波动，由各关卡阈值执法、不入基线。
+  baseline-file: "quality/baseline.json"
+  # bot 提交者模式（ERE，匹配 "作者 <邮箱>"；与 g060 同口径）
+  bot-patterns: '\[bot\]'
+  # 放宽管制 trailer：bot 提交把基线改差时必须带（值=ADR-NNNN 或 #NN，人类批准形态）
+  loosen-trailer: "Ratchet-Loosen"
