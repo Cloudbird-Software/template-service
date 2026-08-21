@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   hygiene:
-    uses: Cloudbird-Software/CI-Workflows/.github/workflows/hygiene.yml@9c20d43d60e9f9d1438f171aeee8e4dbdf02c08b # v1
+    uses: Cloudbird-Software/CI-Workflows/.github/workflows/hygiene.yml@8cc9f76691276eb3f0bbfd059c2a45bdb0b75822 # v1
 
   deps-audit:
     # push 面依赖审计（ADR-0021，红队 #11-C）：dependency-review 只支持 PR 事件（比对
@@ -39,8 +39,9 @@ jobs:
           npm audit --package-lock-only --audit-level=high
 
   check:
-    uses: Cloudbird-Software/CI-Workflows/.github/workflows/check.yml@9c20d43d60e9f9d1438f171aeee8e4dbdf02c08b # v1
+    uses: Cloudbird-Software/CI-Workflows/.github/workflows/check.yml@8cc9f76691276eb3f0bbfd059c2a45bdb0b75822 # v1
     with:
+      ciw-ref: 8cc9f76691276eb3f0bbfd059c2a45bdb0b75822
       runtime: node
       node-version: "24"
 
@@ -49,7 +50,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: Cloudbird-Software/CI-Workflows/.github/workflows/dep-review.yml@9c20d43d60e9f9d1438f171aeee8e4dbdf02c08b # v1
+    uses: Cloudbird-Software/CI-Workflows/.github/workflows/dep-review.yml@8cc9f76691276eb3f0bbfd059c2a45bdb0b75822 # v1
 
   adr-required:
     # C1 脚手架面（ADR-0021，GOVERNANCE C1 scope）：供应链入口文件变更须引用 ADR。
@@ -113,9 +114,9 @@ jobs:
     # BOOTSTRAP 钉扎：uses 与 ciw-ref 均指向 CI-Workflows PR #18 分支提交（两处一致，
     # 被调用侧无法自取自身 ref）；其 squash 合入并走 v1.X.Y 发布四步流程后，两处同改
     # merge SHA（勿用可变 @main）。
-    uses: Cloudbird-Software/CI-Workflows/.github/workflows/contract.yml@60c380df921ed2f18945d81f22d67b44046e602e # v1
+    uses: Cloudbird-Software/CI-Workflows/.github/workflows/contract.yml@8cc9f76691276eb3f0bbfd059c2a45bdb0b75822 # v1
     with:
-      ciw-ref: 60c380df921ed2f18945d81f22d67b44046e602e
+      ciw-ref: 8cc9f76691276eb3f0bbfd059c2a45bdb0b75822
 
   gate:
     if: always()
