@@ -129,6 +129,40 @@ jobs:
     with:
       detector-ref: 4938955db008ddab2df170ec824c2cc3acbc1551
 
+  quality-gates:
+    # W2-C2（.github#215，ADR-0061 决策 5 / AC-4）：CI 与本地 make gates-pr 同一编排器
+    # 入口 quality/run-gates.sh（同一脚本 + 同一 GATE_* env 注入协议）——本地/CI 结果一致。
+    # fetch-depth: 0 是 g050 的硬前提：fail-before 判定要在测试 commit 的 worktree 上
+    # 复现红（浅克隆无历史即无拓扑证据，fail-closed）。三事件面都跑，无结构性 skip。
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "24"
+      - name: run-gates pr（统一编排器）
+        env:
+          GH_TOKEN: ${{ github.token }} # g060 回查 spec PR 状态用（公开仓只读）
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          # 模板值一律经 env 间接引用（zizmor template-injection 规范）
+          if [ -n "$PR_NUMBER" ]; then
+            export GATE_PR="$PR_NUMBER" GATE_PR_AUTHOR="$PR_AUTHOR" GATE_BASE="origin/$BASE_REF"
+            GATE_CARD=$(printf '%s' "$PR_BODY" | sed -n 's/^Card: [^#]*#\([0-9][0-9]*\).*/\1/p' | head -1)
+            [ -n "$GATE_CARD" ] && export GATE_CARD
+          fi
+          npm ci
+          bash quality/run-gates.sh pr
+
   gate:
     if: always()
     needs:
@@ -140,6 +174,7 @@ jobs:
         adr-required,
         contract,
         suppression-budget,
+        quality-gates,
       ]
     runs-on: ubuntu-latest
     steps:
