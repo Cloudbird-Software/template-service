@@ -3,6 +3,7 @@
 ## 命令
 
 - `make setup` 安装 / `make check` 提交前必跑（lint+arch+test）/ `make test <文件>` 单测
+- 找活（ADR-0051）：`ghcb next` 列本仓 state:ready 卡 → `ghcb claim <n>` 评论 /claim 自动转 in-progress → `make gates-pr` 本地复现关卡（W1-C5）
 
 ## 硬规则（违反 = PR 打回）
 
