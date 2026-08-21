@@ -40,6 +40,7 @@ run_fast() {
     g050-fail-before.assert-signatures g050-fail-before.collection-signatures
     g060-test-tamper.lock-file g060-test-tamper.owner-logins
     g060-test-tamper.bot-patterns g060-test-tamper.spec-repo
+    g020-arch.depcruise-cmd g020-arch.max-depcruise-errors g020-arch.exports-max
   )
   for k in "${keys[@]}"; do
     v=$(contract_value "${k%.*}" "${k#*.}") || { remember 3; continue; }
@@ -77,7 +78,8 @@ case "$MODE" in
     # 关卡（g050 红复现）与 node 检查面都依赖仓内 node_modules——先挡一道，避免 npx 联网拉包
     [[ -d node_modules ]] || { echo "node_modules 缺失——先 make setup（infra，exit 3）" >&2; exit 3; }
     run_fast
-    for g in quality/gates/g0*.sh; do
+    # W5-C1 起关卡号段扩到 g9xx（g900-ratchet）——glob 覆盖全部 gNNN 关卡入口
+    for g in quality/gates/g*.sh; do
       [[ -e "$g" ]] || continue
       run_step "关卡 $g" bash "$g"
     done

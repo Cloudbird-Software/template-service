@@ -22,6 +22,7 @@ version: 1
 # 关卡注册表（关卡统一 CLI 契约 IFACE-04 / #127 §2：id/作用域/阻断性/责任角色）
 gates:
   - { id: g010-spec-schema, scope: spec, blocking: true, owner: spec-author }
+  - { id: g020-arch, scope: code, blocking: true, owner: refactorer }
   - { id: g050-fail-before, scope: test, blocking: true, owner: test-author }
   - { id: g060-test-tamper, scope: test, blocking: true, owner: refactorer }
 
@@ -87,3 +88,25 @@ g060-test-tamper:
   bot-patterns: '\[bot\]'
   # Spec-Change trailer 回查的 spec PR 所在仓（trailer: "Spec-Change: <PR#>"）
   spec-repo: "Cloudbird-Software/.github"
+
+# ---- W5-C1：整洁关卡组全量（.github#224 / ADR-0070）----
+# 读取面与既有关卡一致：阈值/配置全部在本文件，脚本经 tidy_scan.load_section 读取
+# （GATE_TH_<段名>_<键> 可覆盖——段/键连字符归一为下划线）。列表值一律 "|"-连接
+# 的路径前缀串。首启口径：ADR-0070 后果节——全量首启有误报潮，先冻结现状再分批
+# 收紧（收紧走普通 C1 PR，放宽须新 ADR）。
+g020-arch:
+  # 依赖架构：判定引擎=dependency-cruiser（宪法 §9#5 署名——判定轮子不自研），
+  # 规则在 .dependency-cruiser.cjs；本关卡只消费其 JSON 结果 + 本阈值。
+  depcruise-cmd: "npx depcruise src --output-type json"
+  max-depcruise-errors: 0
+  # 模块形状（ADR-0070 决策 1）：src-paths 下 index.ts 为模块入口。
+  # depthRatio=入口代码行/导出符号数（接口窄而实现深；纯转发模块≈1 即"浅模块"），
+  # 只对 ≥2 导出的入口执法（单导出=最小公共面，不受形状约束）。
+  src-paths: "src"
+  exports-max: 7
+  fanout-max: 12
+  depthratio-min: 2
+  # api-surface 变更声明（ADR-0070 决策 1）：改动下列前缀内文件而 commit 不带
+  # "Api-Surface: <摘要>" trailer → fail（无 GATE_BASE 的本地模式不适用）
+  api-surface-paths: "src/index.ts|.env.example"
+  api-surface-trailer: "Api-Surface"
