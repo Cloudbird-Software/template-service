@@ -1,11 +1,20 @@
-.PHONY: setup fmt lint arch test build check card-test gates-pr
+.PHONY: setup fmt lint arch test build check card-test gates-pr gates-fast
 setup:  ; npm ci
 fmt:    ; npx prettier --write .
 lint:   ; npx prettier --check . && npx eslint . && npx tsc --noEmit
 arch:   ; npx depcruise src
 test:   ; npx vitest run --coverage
 build:  ; npm run build
-check:  lint arch test
+
+# ---------- quality 关卡（W2-C1 / ADR-0060；宪法 §4E 验证器之验证） ----------
+# gates-fast：quality 关卡自测（零网络/零 LLM，bash+python 标准库）——关卡自身
+# 变更必须带测试。check 串上它：lint 逻辑坏=整仓红，不留"检查器无人检查"的洞。
+# （check 目标属人类专属治理面（AGENTS.md 硬规则 2），本次经卡 #214 blastRadius
+#  授权改动，合并由人把关。）
+gates-fast: ## 跑 quality 关卡自测（断言 .github#214 全部 AC）
+	@bash quality/tests/run-all.sh
+
+check:  lint arch test gates-fast
 
 # ---------- 入口协议块第 4 步两目标（W1-C3 / ADR-0055 决策 3） ----------
 # card-test：诚实薄封装——拉卡 AC 列表+提示按 AC 先写红测试（本仓无按卡测试集
