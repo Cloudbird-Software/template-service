@@ -23,6 +23,7 @@ version: 1
 gates:
   - { id: g010-spec-schema, scope: spec, blocking: true, owner: spec-author }
   - { id: g020-arch, scope: code, blocking: true, owner: refactorer }
+  - { id: g030-nav, scope: code, blocking: true, owner: refactorer }
   - { id: g050-fail-before, scope: test, blocking: true, owner: test-author }
   - { id: g060-test-tamper, scope: test, blocking: true, owner: refactorer }
 
@@ -110,3 +111,26 @@ g020-arch:
   # "Api-Surface: <摘要>" trailer → fail（无 GATE_BASE 的本地模式不适用）
   api-surface-paths: "src/index.ts|.env.example"
   api-surface-trailer: "Api-Surface"
+g030-nav:
+  # AI 导航容易度度量（ADR-0070 决策 2 / 宪法 §9#5：公共知识空白，自研；
+  # 方法署名 aider repo-map）。全部输出指标、超阈值 fail（卡 AC-2）。
+  scan-paths: "src|tests|quality"
+  # fixture/报告不进导航度量（fixture 是关卡自测语料，不是被导航的代码）
+  ignore-paths: "quality/fixtures|quality/reports"
+  # 1) 每目录文件数上限（防平铺——文件堆一个目录=无法定位）
+  max-files-per-dir: 12
+  # 2) repo-map 覆盖率：固定 token 预算内可装配符号比例（符号宇宙=TS 导出 +
+  #    py 顶层 def/class；token 价=(名+路径+开销)//4）
+  repomap-token-budget: 2000
+  min-repomap-coverage: 0.8
+  # 3) 引用图：从入口 BFS 的平均跳数/直径/环数
+  entry-file: "src/index.ts"
+  max-avg-hops: 2.5
+  max-graph-diameter: 5
+  max-import-cycles: 0
+  # 4) 文档-符号验真：这些 .md 反引号引用的符号必须存在于代码/make/npm 符号宇宙
+  doc-paths: "README.md|AGENTS.md|docs"
+  # 非代码专名白名单（"|"连接；仅限确实不是代码符号的词）
+  doc-symbol-ignore: ""
+  # 5) 词表 lint：版本化 glossary；文档散文中的缩写必须先入表
+  glossary-file: "quality/glossary.yaml"
