@@ -209,7 +209,7 @@ def collect_specs(argv, env):
 def run(argv):
     env = os.environ
     t0 = time.time()
-    th = gc.contract_get(gc.load_contract(), 'thresholds.g010')
+    th = gc.apply_env_overrides(gc.contract_get(gc.load_contract(), 'thresholds.g010'), 'g010')
     idx = load_index(env.get('GATE_TESTS_INDEX', ''), 'tests')
     # 无索引（env 未给）→ tests 置 None：TEST 引用断链检查降级（离线没有索引可对），
     # 孤儿/镀金仍按"无测试覆盖"执法——空索引与无索引语义不同，不混。

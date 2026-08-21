@@ -178,6 +178,22 @@ def contract_get(root, dotted):
     return cur
 
 
+def apply_env_overrides(node, prefix=''):
+    """对阈值子树逐叶子应用 GATE_TH_* 覆盖（qc_get 的子树版）。
+    为什么需要：关卡一次取整棵 thresholds.<gate> 子树，若只在 qc_get 点路径上
+    生效，叶级注入会静默失效（注入测试假阴）——所以取子树后必须再走一遍覆盖。"""
+    if isinstance(node, dict):
+        return {k: apply_env_overrides(v, '%s.%s' % (prefix, k) if prefix else k)
+                for k, v in node.items()}
+    if prefix:
+        env = os.environ.get(_env_name(prefix))
+        if env is not None:
+            if isinstance(node, list):
+                return [_scalar(p, '环境变量 ' + _env_name(prefix)) for p in env.split()]
+            return _scalar(env, '环境变量 ' + _env_name(prefix))
+    return node
+
+
 def load_contract(path=None):
     path = path or os.environ.get('GATE_CONTRACT') or os.path.join(repo_root(), 'quality', 'contract.yaml')
     try:
