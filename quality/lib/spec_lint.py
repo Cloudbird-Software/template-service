@@ -12,7 +12,6 @@
         （IR/BUDGET/TEST 引用不存在）——宪法 §4E 追溯闭合
 零网络零 LLM：IR 账本/卡内容在线闭合由 org-gate 负责，这里只吃本地索引。
 """
-import json
 import os
 import re
 import sys
@@ -37,11 +36,11 @@ def parse_spec(path, text):
     start = next((i for i, l in enumerate(lines[:5]) if l.strip() == '---'), None)
     meta, fm_end = {}, None
     if start is not None:
-        fm_end = next((i for i in range(start + 1, len(lines)) if lines[i].strip() == '---'), None)
-        if fm_end is None:
-            fm_end = None  # 不闭合：交给结构检查报错，这里不吞
-        else:
-            meta = gc.load_yaml('\n'.join(lines[start + 1:fm_end]))
+        # 不闭合的 frontmatter：fm_end 留 None 交给结构检查报错，这里不吞
+        close = next((i for i in range(start + 1, len(lines)) if lines[i].strip() == '---'), None)
+        if close is not None:
+            fm_end = close
+            meta = gc.load_yaml('\n'.join(lines[start + 1:close]))
     clauses, section = [], ''
     body_from = 0 if fm_end is None else fm_end + 1
     for i in range(body_from, len(lines)):
@@ -241,19 +240,13 @@ def run(argv):
               'metrics': {'specs': len(paths), 'acCount': ctx['ac_count'], 'behCount': ctx['beh_count'],
                           'violationCount': len(public), 'exemptedVague': ctx['exempted'], 'exitCode': code},
               'ratchetKeys': [], 'violations': public, 'durationMs': int((time.time() - t0) * 1000)}
-    emit(report, findings, code, env.get('GATE_REPORT_OUT', ''))
+    emit(report, findings, code)
     return code
 
 
-def emit(report, findings, code, out_path):
+def emit(report, findings, code):
     """落盘 + schema 校验（不过 schema 即 exit 3，ADR 决策 2）+ 人类摘要（<=20 行）。"""
-    out = out_path or os.path.join(gc.repo_root(), 'quality', 'reports', report['gate'] + '.json')
-    os.makedirs(os.path.dirname(out), exist_ok=True)
-    with open(out, 'w', encoding='utf-8') as f:
-        json.dump(report, f, ensure_ascii=False, indent=2)
-        f.write('\n')
-    with open(gc.gate_report_schema_path(), encoding='utf-8') as f:
-        errs = gc.validate_schema(report, json.load(f))
+    out, errs = gc.write_report(gc.repo_root(), report['gate'], report)
     if errs:
         print('infra: gate-report 不过 schema 校验：%s' % '; '.join(errs), file=sys.stderr)
         sys.exit(gc.EXIT_INFRA)

@@ -254,6 +254,30 @@ def gate_report_schema_path():
     return os.path.join(os.path.dirname(__file__), '..', 'schema', 'gate-report.schema.json')
 
 
+# ---------- gate-report 落盘管道（arch/nav/cx/ratchet/spec 判定核心共用的同一段管道） ----------
+
+def finding(file, line, rule, message, fix):
+    """整洁关卡组（arch/nav/complexity）的违规条目构造——fixHint 尾注 ruleId 供
+    自测 grep 定位。spec_lint 的条目带 symbol/evidence/escalate 扩展键，不在此列。"""
+    return {'file': file, 'line': line, 'rule': rule, 'message': message,
+            'fixHint': '%s（ruleId=%s）' % (fix, rule)}
+
+
+def write_report(root, gate_id, report):
+    """报告落盘（GATE_REPORT_OUT 优先，缺省 <root>/quality/reports/<gate>.json）
+    + schema 自校验，返回 (落盘路径, schema 错误列表)。错误非空=infra-error，退出码
+    由调用方折算；目录建不了/文件写不进时 OSError 直接上浮（同样归 infra）。"""
+    out = os.environ.get('GATE_REPORT_OUT') or os.path.join(
+        root, 'quality', 'reports', gate_id + '.json')
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    with open(out, 'w', encoding='utf-8') as f:
+        json.dump(report, f, ensure_ascii=False, indent=2)
+        f.write('\n')
+    with open(gate_report_schema_path(), encoding='utf-8') as f:
+        errs = validate_schema(report, json.load(f))
+    return out, errs
+
+
 # ---------- bash 侧 CLI：qc_get 走这里（python gate_common.py get <dotted.key>） ----------
 
 def _main(argv):
