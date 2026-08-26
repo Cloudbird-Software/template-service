@@ -15,7 +15,6 @@
   7. 豁免审计：quality/exemptions.yaml 每条豁免必须带可追溯 ref（ADR/issue）。
 退出码：0=过 1=违规 3=infra。零网络零新依赖；AST-lite 局限见 tidy_scan 头注。
 """
-import json
 import os
 import re
 import sys
@@ -43,10 +42,7 @@ RE_FN_ASSIGN = re.compile(r'\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::[^=;]
                           r'\s*(?:async\s+)?(?:\(([^)]*)\)|[A-Za-z_$][\w$]*)\s*=>')
 RE_IDENT_TOKEN = re.compile(r'[A-Za-z_$][\w$]*')
 
-
-def finding(file, line, rule, message, fix):
-    return {'file': file, 'line': line, 'rule': rule, 'message': message,
-            'fixHint': '%s（ruleId=%s）' % (fix, rule)}
+finding = gc.finding  # 违规条目构造与 arch/nav 同形，收口到 gate_common（行为不变）
 
 
 def mute(text):
@@ -214,7 +210,7 @@ def scan(root, th):
             if len(parts) != 3 or '-' in (parts[0], parts[1]):
                 continue
             rel = parts[2]
-            if any(rel == p or rel.startswith(p + '/') for p in budget_paths):
+            if ts.hit(rel, budget_paths):
                 net += int(parts[0]) - int(parts[1])
         if net > int(th['max-net-loc']):
             F.append(finding('<diff>', 1, 'cx-loc-budget',
@@ -247,7 +243,7 @@ def scan(root, th):
     # 抑制总量（本地也计——棘轮指标面）
     suppress_total = 0
     for rel in files:
-        if any(rel == p or rel.startswith(p + '/') for p in sup_paths):
+        if ts.hit(rel, sup_paths):
             suppress_total += len(RE_SUPPRESS.findall(ts.read(root, rel)))
 
     # 7. 豁免审计
@@ -286,12 +282,7 @@ def run(argv):
                             metrics['cx.prematureAbstractions'], metrics['cx.logiclessWrappers'],
                             metrics['cx.suppressionTotal'], metrics['cx.exemptionCount'], metrics['cx.netLoc']),
               'fixHint': '见逐条 violations 的 fixHint' if findings else None}
-    out = os.environ.get('GATE_REPORT_OUT') or os.path.join(root, 'quality', 'reports', GATE + '.json')
-    os.makedirs(os.path.dirname(out), exist_ok=True)
-    with open(out, 'w', encoding='utf-8') as f:
-        json.dump(report, f, ensure_ascii=False, indent=2)
-        f.write('\n')
-    errs = gc.validate_schema(report, json.load(open(gc.gate_report_schema_path(), encoding='utf-8')))
+    out, errs = gc.write_report(root, GATE, report)
     if errs:
         print('infra: gate-report 不过 schema：%s' % '; '.join(errs), file=sys.stderr)
         return gc.EXIT_INFRA

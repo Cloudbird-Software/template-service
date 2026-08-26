@@ -26,10 +26,7 @@ import tidy_scan as ts
 
 GATE = 'g020-arch'
 
-
-def finding(file, line, rule, message, fix):
-    return {'file': file, 'line': line, 'rule': rule, 'message': message,
-            'fixHint': '%s（ruleId=%s）' % (fix, rule)}
+finding = gc.finding  # 违规条目构造与 nav/cx 同形，收口到 gate_common（行为不变）
 
 
 def load_cruise(root, th):
@@ -96,8 +93,7 @@ def scan(root, th):
     base = os.environ.get('GATE_BASE', '')
     if base:
         changed = ts.diff_files(root, base, os.environ.get('GATE_HEAD', 'HEAD'))
-        api_hits = [c for c in changed
-                    if any(c == p or c.startswith(p + '/') for p in ts.split_paths(th['api-surface-paths']))]
+        api_hits = [c for c in changed if ts.hit(c, ts.split_paths(th['api-surface-paths']))]
         if api_hits:
             trailers = ts.git(root, 'log', '--format=%B', '%s...%s' % (base, os.environ.get('GATE_HEAD', 'HEAD')))
             if not re.search(r'^%s\s*:' % th['api-surface-trailer'], trailers, re.M):
@@ -126,13 +122,7 @@ def run(argv):
                          % (metrics['arch.depcruiseErrors'], metrics['arch.shallowModules'],
                             'n/a（本地）' if not os.environ.get('GATE_BASE') else 'ok'),
               'fixHint': '见逐条 violations 的 fixHint' if findings else None}
-    out = os.environ.get('GATE_REPORT_OUT') or os.path.join(
-        root, 'quality', 'reports', GATE + '.json')
-    os.makedirs(os.path.dirname(out), exist_ok=True)
-    with open(out, 'w', encoding='utf-8') as f:
-        json.dump(report, f, ensure_ascii=False, indent=2)
-        f.write('\n')
-    errs = gc.validate_schema(report, json.load(open(gc.gate_report_schema_path(), encoding='utf-8')))
+    out, errs = gc.write_report(root, GATE, report)
     if errs:
         print('infra: gate-report 不过 schema：%s' % '; '.join(errs), file=sys.stderr)
         return gc.EXIT_INFRA

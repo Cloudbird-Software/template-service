@@ -59,7 +59,9 @@ def split_paths(value):
     return [p.strip().rstrip('/') for p in (value or '').split('|') if p.strip()]
 
 
-def _hit(rel, prefixes):
+def hit(rel, prefixes):
+    """rel 是否落在前缀集内（自身或其子路径）——扫描面忽略、api-surface、
+    LOC 预算/抑制扫描等所有“前缀集过滤”共用这一个谓词。"""
     return any(rel == p or rel.startswith(p + '/') for p in prefixes)
 
 
@@ -72,11 +74,11 @@ def list_files(root, scan_paths, ignore_paths=''):
         if not os.path.isdir(top):
             continue
         for dirpath, dirnames, filenames in os.walk(top):
-            dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS and not _hit(
+            dirnames[:] = sorted(d for d in dirnames if d not in SKIP_DIRS and not hit(
                 os.path.relpath(os.path.join(dirpath, d), root).replace('\\', '/'), ig))
             for fn in sorted(filenames):
                 rel = os.path.relpath(os.path.join(dirpath, fn), root).replace('\\', '/')
-                if not _hit(rel, ig):
+                if not hit(rel, ig):
                     out.append(rel)
     return sorted(out)
 
@@ -223,7 +225,7 @@ def diff_added_lines(root, base, head, paths):
     """范围内指定前缀下“新增的行”（逐行内容）——抑制标记零增长/新导出符号用。"""
     out = []
     for rel in diff_files(root, base, head):
-        if not any(rel == p or rel.startswith(p + '/') for p in paths):
+        if not hit(rel, paths):
             continue
         text = git(root, 'diff', '-U0', '%s...%s' % (base, head), '--', rel)
         out.extend((rel, l[1:]) for l in text.splitlines() if l.startswith('+') and not l.startswith('+++'))

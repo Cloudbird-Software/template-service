@@ -117,13 +117,7 @@ def build_report(status, code, findings, metrics, improved, summary, t0):
 
 
 def emit(report, code):
-    out = os.environ.get('GATE_REPORT_OUT') or os.path.join(
-        os.getcwd(), 'quality', 'reports', GATE + '.json')
-    os.makedirs(os.path.dirname(out), exist_ok=True)
-    with open(out, 'w', encoding='utf-8') as f:
-        json.dump(report, f, ensure_ascii=False, indent=2)
-        f.write('\n')
-    errs = gc.validate_schema(report, json.load(open(gc.gate_report_schema_path(), encoding='utf-8')))
+    out, errs = gc.write_report(os.getcwd(), GATE, report)
     if errs:
         print('infra: gate-report 不过 schema：%s' % '; '.join(errs), file=sys.stderr)
         return gc.EXIT_INFRA

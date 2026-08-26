@@ -29,10 +29,7 @@ RE_IDENT = re.compile(r'^[A-Za-z_][A-Za-z0-9_-]{1,63}$')
 RE_ACRONYM = re.compile(r'\b[A-Z][A-Z0-9]{1,6}\b')
 TOKEN_OVERHEAD = 16  # repo-map 每符号条目固定开销的字符估价（路径头+花括号+换行）
 
-
-def finding(file, line, rule, message, fix):
-    return {'file': file, 'line': line, 'rule': rule, 'message': message,
-            'fixHint': '%s（ruleId=%s）' % (fix, rule)}
+finding = gc.finding  # 违规条目构造与 arch/cx 同形，收口到 gate_common（行为不变）
 
 
 def md_files(root, doc_paths):
@@ -79,8 +76,10 @@ def doc_symbols(root, files):
                     in_jobs = True
                 elif in_jobs and re.match(r'^\S', line):
                     in_jobs = False
-                elif in_jobs and re.match(r'^  ([A-Za-z][\w-]+):\s*$', line):
-                    out.add(re.match(r'^  ([A-Za-z][\w-]+):\s*$', line).group(1))
+                elif in_jobs:
+                    m = re.match(r'^  ([A-Za-z][\w-]+):\s*$', line)
+                    if m:
+                        out.add(m.group(1))
     return out, sym
 
 
@@ -277,12 +276,7 @@ def run(argv):
                             metrics['nav.avgHops'], metrics['nav.importCycles'],
                             metrics['nav.docDangling'], metrics['nav.glossaryUndefined']),
               'fixHint': '见逐条 violations 的 fixHint' if findings else None}
-    out = os.environ.get('GATE_REPORT_OUT') or os.path.join(root, 'quality', 'reports', GATE + '.json')
-    os.makedirs(os.path.dirname(out), exist_ok=True)
-    with open(out, 'w', encoding='utf-8') as f:
-        json.dump(report, f, ensure_ascii=False, indent=2)
-        f.write('\n')
-    errs = gc.validate_schema(report, json.load(open(gc.gate_report_schema_path(), encoding='utf-8')))
+    out, errs = gc.write_report(root, GATE, report)
     if errs:
         print('infra: gate-report 不过 schema：%s' % '; '.join(errs), file=sys.stderr)
         return gc.EXIT_INFRA
