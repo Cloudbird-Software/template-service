@@ -5,13 +5,13 @@ Cloudbird Software 新项目模板。用 GitHub "Use this template" 或
 
 ## Makefile 接口（所有语言统一，CI 只认这个）
 
-| 目标         | 作用                                     |
-| ------------ | ---------------------------------------- |
-| `make setup` | 安装依赖（`npm ci`）                     |
-| `make fmt`   | 格式化                                   |
-| `make lint`  | prettier --check + eslint + tsc --noEmit |
-| `make test`  | vitest + coverage                        |
-| `make build` | 构建                                     |
+| 目标         | 作用                                                |
+| ------------ | --------------------------------------------------- |
+| `make setup` | 安装依赖（`npm ci`）                                |
+| `make fmt`   | 格式化                                              |
+| `make lint`  | prettier --check + eslint + tsc --noEmit            |
+| `make test`  | vitest + coverage                                   |
+| `make build` | 构建                                                |
 | `make check` | lint + arch + test + gates-fast，**提交前必须全绿** |
 
 ## CI 结构
