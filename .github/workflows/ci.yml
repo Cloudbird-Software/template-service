@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   hygiene:
-    uses: Cloudbird-Software/CI-Workflows/.github/workflows/hygiene.yml@61191f87c537f6e887695517121c6e530a838261 # v1
+    uses: Cloudbird-Software/CI-Workflows/.github/workflows/hygiene.yml@d3c01525be512471380a7ab33ccae2b73b3e575f # v1
 
   deps-audit:
     # push 面依赖审计（ADR-0021，红队 #11-C）：dependency-review 只支持 PR 事件（比对
@@ -39,7 +39,7 @@ jobs:
           npm audit --package-lock-only --audit-level=high
 
   check:
-    uses: Cloudbird-Software/CI-Workflows/.github/workflows/check.yml@61191f87c537f6e887695517121c6e530a838261 # v1
+    uses: Cloudbird-Software/CI-Workflows/.github/workflows/check.yml@d3c01525be512471380a7ab33ccae2b73b3e575f # v1
     with:
       ciw-ref: 61191f87c537f6e887695517121c6e530a838261
       runtime: node
@@ -50,7 +50,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: Cloudbird-Software/CI-Workflows/.github/workflows/dep-review.yml@61191f87c537f6e887695517121c6e530a838261 # v1
+    uses: Cloudbird-Software/CI-Workflows/.github/workflows/dep-review.yml@d3c01525be512471380a7ab33ccae2b73b3e575f # v1
     with:
       ciw-ref: 61191f87c537f6e887695517121c6e530a838261
 
@@ -116,7 +116,7 @@ jobs:
     # BOOTSTRAP 钉扎：uses 与 ciw-ref 均指向 CI-Workflows PR #18 分支提交（两处一致，
     # 被调用侧无法自取自身 ref）；其 squash 合入并走 v1.X.Y 发布四步流程后，两处同改
     # merge SHA（勿用可变 @main）。
-    uses: Cloudbird-Software/CI-Workflows/.github/workflows/contract.yml@61191f87c537f6e887695517121c6e530a838261 # v1
+    uses: Cloudbird-Software/CI-Workflows/.github/workflows/contract.yml@d3c01525be512471380a7ab33ccae2b73b3e575f # v1
     with:
       ciw-ref: 61191f87c537f6e887695517121c6e530a838261
 
@@ -125,7 +125,7 @@ jobs:
     # + ADR 逃生门。独立 reusable（v1.5.1 内嵌 check.yml 实测触发平台 action 解析
     # 故障，v1.5.3 起独立文件——ADR-0036 修订）。非 PR 事件 n/a-success（无需
     # EXPECTED_SKIP 登记）。
-    uses: Cloudbird-Software/CI-Workflows/.github/workflows/suppression-gate.yml@61191f87c537f6e887695517121c6e530a838261
+    uses: Cloudbird-Software/CI-Workflows/.github/workflows/suppression-gate.yml@d3c01525be512471380a7ab33ccae2b73b3e575f
     with:
       detector-ref: 61191f87c537f6e887695517121c6e530a838261
 
