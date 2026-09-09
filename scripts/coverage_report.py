@@ -5,7 +5,7 @@
 覆盖等级，写仓库根 coverage-summary.json，未覆盖时给逐条补救建议。
 
 规格真源：specs/IR-W30-001/spec-draft.md（§1 对象模型、§2 卡发现与谓词提取、
-§3 锚定与评级、§4 schema、§9 残余风险）。纯生成侧、零网络、零新依赖（仅
+§3 锚定与评级、§4 schema、§9 残余风险、§10 v1.1 勘误）。纯生成侧、零网络、零新依赖（仅
 Python 标准库）、输出确定性（同输入同输出，无任何时间戳字段）。
 判定/执行分离：本脚本可本地独立复算，不依赖外部服务。
 
@@ -49,7 +49,9 @@ TS_KEY_RE = re.compile(
 # --------------------------------------------------------------------------
 
 def iter_tree(root: Path):
-    """递归枚举 root 下文件；跳过 suite/ 子树与隐藏组件（§2.4）。返回 POSIX 相对路径。"""
+    """递归枚举 root 下文件；跳过 suite/ 子树、隐藏组件与符号链接（§2.4/§10 E1）。
+    返回 POSIX 相对路径。
+    """
     if not root.is_dir():
         return
     stack = [""]
@@ -64,6 +66,8 @@ def iter_tree(root: Path):
             child = f"{rel}/{entry.name}" if rel else entry.name
             if entry.name.startswith("."):
                 continue
+            if entry.is_symlink():
+                continue  # 符号链接一律跳过（§10 E1）：不跟随、不入报告（RT06 逃逸/RT07 环）
             if entry.is_dir():
                 if entry.name == "suite":
                     continue
@@ -112,7 +116,8 @@ def discover_cards(spec_root: Path):
     missing = []
     try:
         level1 = sorted(p.name for p in spec_root.iterdir()
-                        if p.is_dir() and not p.name.startswith(".") and p.name != "suite")
+                        if p.is_dir() and not p.is_symlink()
+                        and not p.name.startswith(".") and p.name != "suite")
     except OSError:
         level1 = []
     for dirname in level1:
@@ -243,6 +248,9 @@ def parse_yaml_subset(text: str):
                 raise YamlMalformed(f"键 {key} 后无值且无子块")
             if key in ("predicates", "expected_changes"):
                 list_indent = indent
+            else:
+                # 谓词块键名单独封闭（§10 E2）：其它键复位列表延续，其子块永不成为谓词（RT20）
+                list_indent = None
             continue
         _check_value(value)
         if list_indent is not None and indent <= list_indent:
@@ -263,14 +271,17 @@ def read_text_relaxed(path: Path):
 # --------------------------------------------------------------------------
 
 def load_corpus(repo_root: Path):
-    """tests/** ∪ quality/** 全部可解码为 UTF-8 的文本文件，POSIX 相对路径序。"""
+    """tests/** ∪ quality/** 全部可解码为 UTF-8 的文本文件，POSIX 相对路径序。
+
+    符号链接一律跳过（§10 E1）：与 specs/ 侧对称，仓外内容不得经链接进入语料（RT06）。
+    """
     items = []
     for top in CORPUS_TOPS:
         base = repo_root / top
         if not base.is_dir():
             continue
         for p in base.rglob("*"):
-            if not p.is_file():
+            if p.is_symlink() or not p.is_file():
                 continue
             try:
                 items.append((p.relative_to(repo_root).as_posix(), p.read_bytes().decode("utf-8")))
