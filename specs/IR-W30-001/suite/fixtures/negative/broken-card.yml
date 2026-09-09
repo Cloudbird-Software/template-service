@@ -1,0 +1,8 @@
+# 夹具（负样例）：畸形 YAML——引号与中括号均不闭合，任何 §2.2 子集解析器都必须判畸形。
+# 期望评级见 specs/IR-W30-001/spec-draft.md §7；测试树内安置为 specs/IR-BROKEN-000/card.yml，
+# 对应 holdout H2（标 D 且不崩溃，rc=0）。扫描器跳过 specs/**/suite/**。
+
+ir_id: IR-BROKEN-000
+predicates:
+  - P1: "未闭合的引号延续到下一行
+  - P2: [1, 2
