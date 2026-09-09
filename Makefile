@@ -39,3 +39,16 @@ card-test: ## 读卡 AC 列表并提示测试先行：make card-test CARD=<issue
 gates-pr: ## 本地复现 CI 关卡等价物（quality 关卡 + node 检查面；W2-C2 ADR-0061）
 	@bash quality/run-gates.sh pr
 	@echo "== 开 PR 前检查单（机器不可判部分）：PR body 引用 ADR-NNNN（C1）/ body 带 Card: 元数据行 / 一个 PR 一件事 diff<400 行 =="
+coverage-report: ## 契约卡谓词覆盖率报告（IR-W30-001）
+	; py -3 -X utf8 scripts/coverage_report.py
+
+# ---------- W30 契约卡覆盖率报告（IR-W30-001 / Card C-W30-001） ----------
+# coverage-report：扫描 specs/ 全部契约卡 → 验收谓词锚定评级 A/B/C/D → 仓根
+# coverage-summary.json（schema 见 specs/IR-W30-001/spec-draft.md §4）。
+# 零网络、零新依赖（仅 Python 标准库）、输出确定；等价直调
+# py -3 scripts/coverage_report.py（py 启动器缺失时回退 python3/python）。
+# 注：本行按"只新增不改既有"追加；上文 693ceb5 已有残缺同名 target（"; " 行首
+# 语法错），GNU make 以最后定义为准运行本 recipe，残缺行待治理流程修复。
+.PHONY: coverage-report
+coverage-report: ## 契约卡覆盖率报告（IR-W30-001）：specs/ 全卡 → coverage-summary.json
+	@if py -3 -c "" 2>/dev/null; then py -3 scripts/coverage_report.py; elif command -v python3 >/dev/null 2>&1; then python3 scripts/coverage_report.py; else python scripts/coverage_report.py; fi

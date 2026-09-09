@@ -1,0 +1,11 @@
+# 夹具（正样例）：合法 YAML 契约卡。
+# 期望评级见 specs/IR-W30-001/spec-draft.md §7；测试树内安置为 specs/IR-SAMPLE-000/card.yml，
+# S2 语料（提及 IR-SAMPLE-000 与 P2）下应评 B。
+
+ir_id: IR-SAMPLE-000
+job: >
+  示例卡：验证 YAML 子集契约卡的谓词提取与分级。
+predicates:
+  - P1: 示例谓词一——命令 rc=0
+  - P2: 示例谓词二——输出 schema 合法
+  - P3: 示例谓词三——可重复执行
