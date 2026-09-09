@@ -39,3 +39,5 @@ card-test: ## 读卡 AC 列表并提示测试先行：make card-test CARD=<issue
 gates-pr: ## 本地复现 CI 关卡等价物（quality 关卡 + node 检查面；W2-C2 ADR-0061）
 	@bash quality/run-gates.sh pr
 	@echo "== 开 PR 前检查单（机器不可判部分）：PR body 引用 ADR-NNNN（C1）/ body 带 Card: 元数据行 / 一个 PR 一件事 diff<400 行 =="
+coverage-report: ## 契约卡谓词覆盖率报告（IR-W30-001）
+	; py -3 -X utf8 scripts/coverage_report.py
