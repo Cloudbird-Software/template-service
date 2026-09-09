@@ -259,6 +259,14 @@ class Differential(unittest.TestCase):
         _, rep = self._run_spec(spec)
         self.assertEqual(card_of(rep, "IR-EMPTYKEY-001")["grade"], "D")
 
+    def test_ir_id_first_intent_yml_by_path_order(self):
+        # §4：ir_id 取 specs/**/intent.yml 按路径序首个（多 IR 目录时不得取反序）
+        spec = dict(five_card_spec())
+        spec["specs/IR-A-1/intent.yml"] = "ir_id: IR-A-1\n"
+        spec["specs/IR-Z-9/intent.yml"] = "ir_id: IR-Z-9\n"
+        _, rep = self._run_spec(spec)
+        self.assertEqual(rep["ir_id"], "IR-A-1")
+
     def _run_spec(self, spec, corpus=None):
         root = build_tree(spec, corpus)
         proc = run_tool(root)

@@ -509,7 +509,7 @@ def validate_summary(rep):
 
 def extract_ir_id(spec_root: Path):
     """specs/**/intent.yml 按路径序首个的 ir_id；无则 null（§4）。"""
-    for rel in iter_tree(spec_root):
+    for rel in sorted(iter_tree(spec_root)):
         if rel.split("/")[-1] != "intent.yml":
             continue
         text = read_text_relaxed(spec_root / rel)
