@@ -1,0 +1,42 @@
+---
+ir_id: IR-WG-001
+repo: Cloudbird-Software/template-service
+signed_by: ceo-agent
+signed_at: "2026-09-13"
+state: ir-signed
+---
+
+job: >
+  为 template-service 增加 wg_counter 模块：提供 word_count(text) 函数，
+  按 Unicode 空白（含全角空格/换行/制表符）分词并返回词数；
+  同步增加 specs/IR-WG-001/spec.md 对应的测试与文档。
+
+trigger_scenarios: >
+  治理内核端到端模拟（wg-e2e-2026）需要验证从意图到 spec 到实现到 lineage 的全链路；
+  本卡是该模拟在 template-service 资产上的具体落地载体。
+
+pain_evidence: >
+  当前 template-service 无内置词数统计工具；治理模拟需要可控小功能点验证 speceval 契约。
+
+expected_changes:
+  - P1: 新增 template_service/wg_counter.py（或等价路径），暴露 word_count(text: str) -> int
+  - P2: 新增 tests/test_wg_counter.py，覆盖空输入、英文、Unicode 空白三组断言
+  - P3: speceval state/specs/template-service/wg-counter.speceval 三 eval 文件全部通过
+
+nongoals: >
+  不做词频统计、不做停用词过滤、不改 CI workflow、不引入第三方依赖。
+
+constraints: >
+  遵守仓 AGENTS.md 硬规则：不改 .github/workflows/** 与 Makefile check 目标；
+  一个 PR 一件事；diff < 400 行；仅使用 Python 标准库。
+
+acceptance_evidence: >
+  py -3 -m pytest tests/test_wg_counter.py rc=0 +
+  speceval_lint.py state/specs/template-service/wg-counter.speceval verdict=pass +
+  lineage attach runtime/runs/wg-e2e/wg_counter.py ok=true
+
+reversibility: >
+  完全可逆：revert 该 PR 即可恢复；无数据迁移、无外部依赖。
+
+quality_speed_knobs: >
+  质量优先。实现需严格对齐 speceval C1-C3；测试先行。
