@@ -1,0 +1,49 @@
+# IR-W30-001 — template-service 契约卡覆盖率报告（w30 e2e 模拟项目载体）
+# schema v1 九字段（.github/.github/ISSUE_TEMPLATE/intent.yml）
+# 状态：CEO 代签（S5 授权），state:ir-signed（本地模拟，sim/w30-e2e-2026 分支）
+ir_id: IR-W30-001
+repo: Cloudbird-Software/template-service
+signed_by: ceo-agent
+signed_at: "2026-09-09"
+state: ir-signed
+
+job: >
+  给 template-service 增加 `make coverage-report` 子命令：扫描 specs/ 下全部契约卡，
+  对每张卡的验收谓词产出 A/B/C/D 覆盖等级，输出 coverage-summary.json，
+  并在存在未覆盖谓词时给出补救建议。
+
+trigger_scenarios: >
+  治理内核每个波次交付后需要知道"spec 的谓词有多少被测试真正覆盖"；
+  目前靠人工翻契约卡与测试文件对照，漏检无报警。
+
+pain_evidence: >
+  w31/w32 波次契约卡（state/specs/w31-scheduler.md、w32-deploy.md）的验收门
+  与 runtime/bin/test_*.py 用例的对应关系靠人肉维护；w30 设计文档
+  plans/2026-09-13-w30-e2e-simulation-design.md 第 5 节 V1-V10 亦指出谓词覆盖反查缺口。
+
+expected_changes:
+  - P1: 执行 `make coverage-report` 后在仓库根生成 coverage-summary.json，schema 合法（含 suite 总数、各级计数、逐卡明细）
+  - P2: 每张契约卡有 A（谓词全部被测试锚定）/B（部分）/C（仅提及）/D（无覆盖或卡文件缺失/畸形）等级
+  - P3: 未覆盖谓词列表非空时，报告含逐条补救建议
+  - P4: 命令可重复执行，输出确定性（同输入同输出）
+
+nongoals: >
+  不做测试覆盖率的代码行级统计；不改 CI workflow；不引入新依赖（仅标准库 + 仓库既有工具链）；
+  不实现自动修复，只产出建议。
+
+constraints: >
+  遵守仓 AGENTS.md 硬规则：不改 .github/workflows/** 与 Makefile check 目标；
+  一个 PR 一件事；diff < 400 行；密钥/客户名不进仓。
+  判定/执行分离：覆盖率判定逻辑必须可本地复算，不依赖外部服务。
+
+acceptance_evidence: >
+  coverage-summary.json 实物 + 单元测试全绿 + 红队攻击夹具（删卡/畸形 YAML/路径穿越）
+  verdicts.jsonl 全 survived + git log 含 Card: template-service#C-W30-001 元数据。
+
+reversibility: >
+  完全可逆：新增加脚本 scripts/coverage_report.py + Makefile 一个 target；
+  回退 = revert 该 PR，无数据迁移。
+
+quality_speed_knobs: >
+  质量优先。接受实现只覆盖 specs/**/*.md 契约卡的谓词提取（正则级），
+  不要求自然语言理解；宁可保守标 C 不可误标 A。
